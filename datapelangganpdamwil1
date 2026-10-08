@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Pelanggan</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8f9fa; }
+    .img-preview { max-width: 100px; max-height: 100px; object-fit: cover; border-radius: 6px; }
+  </style>
+</head>
+<body class="p-3 p-md-5">
+
+  <div class="container bg-white p-4 rounded shadow-sm" style="max-width: 900px;">
+    <h3 class="mb-4 text-center">Aplikasi Database Pelanggan</h3>
+
+    <!-- Form Input Data -->
+    <form id="formPelanggan" class="mb-5">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">1. ID Pelanggan</label>
+          <input type="text" id="idPelanggan" class="form-control" placeholder="Contoh: PLG-001" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">2. Nama Pelanggan</label>
+          <input type="text" id="namaPelanggan" class="form-control" placeholder="Nama Lengkap" required>
+        </div>
+        <div class="col-12">
+          <label class="form-label">3. Alamat Pelanggan</label>
+          <textarea id="alamatPelanggan" class="form-control" rows="2" placeholder="Alamat lengkap" required></textarea>
+        </div>
+        <div class="col-md-8">
+          <label class="form-label">4. Titik Koordinat (Maps)</label>
+          <div class="input-group">
+            <input type="text" id="koordinat" class="form-control" placeholder="Contoh: -6.200000, 106.816666" required>
+            <button type="button" class="btn btn-outline-secondary" onclick="dapatkanLokasi()">Ambil Lokasi Saya</button>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">5. Foto Rumah</label>
+          <input type="file" id="fotoRumah" class="form-control" accept="image/*" required>
+        </div>
+        <div class="col-12 mt-4">
+          <button type="submit" class="btn btn-primary w-100">Simpan Data Pelanggan</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Tabel Data Pelanggan -->
+    <h5 class="mb-3">Daftar Pelanggan</h5>
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Nama</th>
+            <th>Alamat</th>
+            <th>Lokasi Maps</th>
+            <th>Foto Rumah</th>
+          </tr>
+        </thead>
+        <tbody id="tabelData">
+          <!-- Data tersimpan akan muncul di sini -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Ambil koordinat GPS otomatis
+    function dapatkanLokasi() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            document.getElementById('koordinat').value = `${lat}, ${lng}`;
+          },
+          () => alert("Gagal mengambil lokasi. Pastikan izin GPS aktif.")
+        );
+      } else {
+        alert("Browser Anda tidak mendukung fitur lokasi GPS.");
+      }
+    }
+
+    // Handle Form Submit
+    document.getElementById('formPelanggan').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      const id = document.getElementById('idPelanggan').value;
+      const nama = document.getElementById('namaPelanggan').value;
+      const alamat = document.getElementById('alamatPelanggan').value;
+      const koordinat = document.getElementById('koordinat').value;
+      const fileFoto = document.getElementById('fotoRumah').files[0];
+
+      if (fileFoto) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const fotoData = e.target.result;
+          tambahKeTabel(id, nama, alamat, koordinat, fotoData);
+          document.getElementById('formPelanggan').reset();
+        };
+        reader.readAsDataURL(fileFoto);
+      }
+    });
+
+    // Tambahkan baris ke tabel
+    function tambahKeTabel(id, nama, alamat, koordinat, fotoData) {
+      const tabel = document.getElementById('tabelData');
+      const row = document.createElement('tr');
+
+      // Buat link ke Google Maps
+      const mapsUrl = `https://www.google.com/maps?q=${encodeURIComponent(koordinat)}`;
+
+      row.innerHTML = `
+        <td><strong>${id}</strong></td>
+        <td>${nama}</td>
+        <td>${alamat}</td>
+        <td><a href="${mapsUrl}" target="_blank" class="btn btn-sm btn-outline-primary">Buka Maps</a></td>
+        <td><img src="${fotoData}" class="img-preview" alt="Foto Rumah"></td>
+      `;
+
+      tabel.appendChild(row);
+    }
+  </script>
+
+</body>
+</html>
